@@ -13,6 +13,7 @@ This repository contains an example LLM application based on Langchain framework
 ```
 
 ```
+ source langsmith.env
  cd my-app
  lanchain serve
 ```
