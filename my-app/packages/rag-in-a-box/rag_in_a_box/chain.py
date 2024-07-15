@@ -41,12 +41,7 @@ vectorstore = Qdrant(
 )
 
 
-# RetrievalQA
-qa = RetrievalQA.from_chain_type(
-    llm=llm,
-    chain_type="stuff",
-    retriever=vectorstore.as_retriever(search_type="mmr", k=20)
-)
+retriever=vectorstore.as_retriever()
 
 # Prompt
 # Optionally, pull from the Hub
