@@ -30,34 +30,23 @@ embeddings = HuggingFaceBgeEmbeddings(
     model_name=model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
 )
 
-# Qdrant
-client = QdrantClient("localhost", port=6333)
+# Store
 url = "http://localhost:6333"
-client.delete_collection(collection_name="RAG-in-a-Box")
 
-# Local Repo
-repo_path = "terraform-aws-module-docs"
-
-# Load
-# Unstructured Markdown Loader
-loader = DirectoryLoader(repo_path, glob="**/*.md", loader_cls=UnstructuredMarkdownLoader)
-data = loader.load()
-
-# Split
-# load text splitter and split docs into snippets of text
-text_splitter = TokenTextSplitter(chunk_size=1000, chunk_overlap=100)
-all_splits = text_splitter.split_documents(data)
-
-# Add to vectorDB
-vectorstore = Qdrant.from_documents(
-    all_splits,
-    embeddings,
-    url=url,
-    prefer_grpc=True,
-    collection_name="RAG-in-a-Box"
+client = QdrantClient("localhost", port=6333)
+vectorstore = Qdrant(
+    client=client,
+    collection_name="docs",
+    embeddings=embeddings,
 )
 
-retriever = vectorstore.as_retriever()
+
+# RetrievalQA
+qa = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever(search_type="mmr", k=20)
+)
 
 # Prompt
 # Optionally, pull from the Hub
